@@ -816,6 +816,23 @@ pydantic = ">=2.0.1"
 python-dotenv = ">=0.21.0"
 
 [[package]]
+name = "pydash"
+version = "7.0.6"
+description = "The kitchen sink of Python utility libraries for doing \"stuff\" in a functional way. Based on the Lo-Dash Javascript library."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pydash-7.0.6-py3-none-any.whl", hash = "sha256:10e506935953fde4b0d6fe21a88e17783cd1479256ae96f285b5f89063b4efd6"},
+    {file = "pydash-7.0.6.tar.gz", hash = "sha256:7d9df7e9f36f2bbb08316b609480e7c6468185473a21bdd8e65dda7915565a26"},
+]
+
+[package.dependencies]
+typing-extensions = ">=3.10,<4.6.0 || >4.6.0"
+
+[package.extras]
+dev = ["Sphinx", "black", "build", "coverage", "docformatter", "flake8", "flake8-black", "flake8-bugbear", "flake8-isort", "furo", "importlib-metadata (<5)", "invoke", "isort", "mypy", "pylint", "pytest", "pytest-cov", "pytest-mypy-testing", "sphinx-autodoc-typehints", "tox", "twine", "wheel"]
+
+[[package]]
 name = "pyflakes"
 version = "3.1.0"
 description = "passive checker of Python programs"
@@ -1351,4 +1368,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "cec950f7ff64a86fe3e59ab850056c6dfbcd47cfe1dafdd3f96ebed961bd75e7"
+content-hash = "40f3b7dd90438c3a627d0867277e520546daa1bb76d9c031525fd25e13483eca"
