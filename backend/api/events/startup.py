@@ -1,6 +1,6 @@
-import json
-
 import httpx
+
+from api.models.schemas.internals.districts import DistrictsDownload
 
 
 async def download_districts():
@@ -8,10 +8,10 @@ async def download_districts():
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
 
-    return response.json()
+    return DistrictsDownload.model_validate(response.json())
 
 
 async def store_district_data():
     data = await download_districts()
     with open("bd-districts.json", "w") as f:
-        f.write(json.dumps(data, indent=4, ensure_ascii=False))
+        f.write(data.model_dump_json(indent=4))
