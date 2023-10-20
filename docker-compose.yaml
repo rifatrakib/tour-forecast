@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  tour-forecast-api:
+    container_name: tour-forecast-api
+    build:
+      context: ./backend
+    working_dir: /backend
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - backend/.env
+    volumes:
+      - ./backend:/backend
+    ports:
+      - "8000:8000"
+    restart: on-failure
