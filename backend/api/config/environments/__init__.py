@@ -42,6 +42,17 @@ class BaseConfig(BaseSettings):
     APP_NAME: str
     MODE: Modes
 
+    # SQL Database Configurations
+    POSTGRES_HOST: str
+    POSTGRES_PORT: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+
+    # PGAdmin Configurations
+    PGADMIN_DEFAULT_EMAIL: str
+    PGADMIN_DEFAULT_PASSWORD: str
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -58,3 +69,12 @@ class BaseConfig(BaseSettings):
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
         return init_settings, env_settings, dotenv_settings, SettingsSource(settings_cls)
+
+    @property
+    def RDS_URI(self) -> str:
+        username = self.POSTGRES_USER
+        password = self.POSTGRES_PASSWORD
+        host = self.POSTGRES_HOST
+        port = self.POSTGRES_PORT
+        db_name = self.POSTGRES_DB
+        return f"postgresql+asyncpg://{username}:{password}@{host}:{port}/{db_name}"
