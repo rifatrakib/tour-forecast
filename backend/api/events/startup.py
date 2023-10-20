@@ -1,8 +1,11 @@
 from typing import List
 
 import httpx
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.database.districts.repository import create_districts, read_districts
 from api.models.schemas.internals.districts import DistrictsDownload
+from api.security.dependencies.clients import get_async_database_session
 
 
 async def download_districts() -> List[DistrictsDownload]:
@@ -14,6 +17,13 @@ async def download_districts() -> List[DistrictsDownload]:
 
 
 async def store_district_data():
-    data = await download_districts()
-    with open("bd-districts.json", "w") as f:
-        f.write(data.model_dump_json(indent=4))
+    session: AsyncSession = get_async_database_session()
+
+    if await read_districts(session):
+        print("Districts already exist in the database.")
+        await session.close()
+        return
+
+    data: DistrictsDownload = await download_districts()
+    await create_districts(session, data)
+    await session.close()
