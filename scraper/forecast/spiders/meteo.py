@@ -1,5 +1,7 @@
 import scrapy
 
+from forecast.items import Forecast
+
 
 class MeteoSpider(scrapy.Spider):
     name = "meteo"
@@ -25,8 +27,23 @@ class MeteoSpider(scrapy.Spider):
             yield scrapy.Request(
                 f'{url}?{"&".join([f"{k}={v}" for k, v in params.items()])}',
                 callback=self.parse_district_forecast,
+                cb_kwargs={
+                    "id": district["id"],
+                    "division_id": district["division_id"],
+                    "name": district["name"],
+                    "bn_name": district["bn_name"],
+                    "lat": district["lat"],
+                    "long": district["long"],
+                },
             )
 
-    def parse_district_forecast(self, response):
+    def parse_district_forecast(self, response, **kwargs):
         data = response.json()
-        print(data.keys())
+        data = data["hourly"]
+
+        for ts, temperature in zip(data["time"], data["temperature_2m"]):
+            yield Forecast(
+                **kwargs,
+                time=ts,
+                temperature=temperature,
+            )

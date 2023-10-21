@@ -1,12 +1,14 @@
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/items.html
+from datetime import datetime
 
-import scrapy
+from pydantic import BaseModel, Field
 
 
-class ForecastItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class Forecast(BaseModel):
+    id: int = Field(title="District ID")
+    division_id: int = Field(title="Division ID")
+    name: str = Field(title="District Name")
+    bn_name: str = Field(title="District Name in Bangla")
+    lat: float = Field(title="Latitude")
+    long: float = Field(title="Longitude")
+    time: datetime = Field(title="Time")
+    temperature: float = Field(title="Temperature")

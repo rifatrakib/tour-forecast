@@ -1,3 +1,5 @@
+from decouple import config
+
 BOT_NAME = "forecast"
 
 SPIDER_MODULES = ["forecast.spiders"]
@@ -52,9 +54,9 @@ ROBOTSTXT_OBEY = False
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    "forecast.pipelines.ForecastPipeline": 300,
-# }
+ITEM_PIPELINES = {
+    "forecast.pipelines.ForecastPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -81,3 +83,10 @@ ROBOTSTXT_OBEY = False
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+REDIS_HOST = config("REDIS_HOST")
+REDIS_PORT = config("REDIS_PORT", cast=int)
+
+INFLUXDB_ORG = config("INFLUXDB_ORG")
+INFLUXDB_HOST = config("INFLUXDB_HOST")
+INFLUXDB_PORT = config("INFLUXDB_PORT", cast=int)
