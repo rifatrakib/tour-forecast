@@ -1,36 +1,6 @@
 version: "3.9"
 
 services:
-  tour-forecast-db:
-    container_name: tour-forecast-db
-    image: postgres:latest
-    env_file:
-      - backend/.env.postgres
-    volumes:
-      - pgdata:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
-    restart: on-failure
-    networks:
-      - private_network
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    restart: unless-stopped
-    volumes:
-      - "pgadmin_data:/var/list/pgadmin"
-    env_file:
-      - backend/.env.pgadmin
-    environment:
-      - PGADMIN_LISTEN_PORT=80
-    ports:
-      - "0.0.0.0:5050:80"
-    networks:
-      - public_network
-      - private_network
-    depends_on:
-      - tour-forecast-db
-
   tour-forecast-api:
     container_name: tour-forecast-api
     build:
@@ -47,12 +17,6 @@ services:
     networks:
       - public_network
       - private_network
-    depends_on:
-      - tour-forecast-db
-
-volumes:
-  pgdata:
-  pgadmin_data:
 
 networks:
   private_network:

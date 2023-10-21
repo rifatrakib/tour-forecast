@@ -10,9 +10,6 @@ python = "^3.9"
 fastapi = {extras = ["all"], version = "^0.104.0"}
 python-decouple = "^3.8"
 pydash = "^7.0.6"
-sqlalchemy = {extras = ["asyncio"], version = "^2.0.22"}
-asyncpg = "^0.28.0"
-alembic = "^1.12.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
