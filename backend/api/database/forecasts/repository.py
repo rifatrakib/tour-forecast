@@ -1,11 +1,11 @@
-from datetime import date
-from typing import List
+from datetime import date, timedelta
+from typing import Any, Dict, List
 
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from api.config.factory import settings
-from api.database.forecasts.utils import process_coolest_districts_data
+from api.database.forecasts.utils import judge_plan_feasibility, process_coolest_districts_data
 from api.models.schemas.internals.forecasts import Forecast
 
 
@@ -29,7 +29,7 @@ def create_forecast_points(client: InfluxDBClient, forecasts: List[Forecast]):
         write_api.write(bucket=settings.INFLUXDB_BUCKET, record=points)
 
 
-def read_coolest_districts(client: InfluxDBClient):
+def read_coolest_districts(client: InfluxDBClient) -> List[Dict, Any]:
     query = (
         'import "date"'
         f'from(bucket: "{settings.INFLUXDB_BUCKET}")'
@@ -39,8 +39,32 @@ def read_coolest_districts(client: InfluxDBClient):
         '|> group(columns: ["district"])'
         '|> pivot(rowKey:["_time"], columnKey:["_field"], valueColumn:"_value")'
     )
+
     with client:
         query_api = client.query_api()
         result = query_api.query_data_frame(query=query, org=settings.INFLUXDB_ORG)
 
     return process_coolest_districts_data(result)
+
+
+def determine_plan_feasibility(
+    client: InfluxDBClient,
+    start: str,
+    destination: str,
+    time: date,
+) -> bool:
+    query = (
+        'import "date"'
+        f'from(bucket: "{settings.INFLUXDB_BUCKET}")'
+        f"|> range(start: {time}, stop: {time + timedelta(days=1)})"
+        '|> filter(fn: (r) => r["_measurement"] == "temperature" and r["_field"] == "temperature")'
+        f'|> filter(fn: (r) => r["district"] == "{start}" or r["district"] == "{destination}")'
+        '|> filter(fn: (r) => date.hour(t: r["_time"]) == 14)'
+        '|> pivot(rowKey:["_time"], columnKey:["_field"], valueColumn:"_value")'
+    )
+
+    with client:
+        query_api = client.query_api()
+        result = query_api.query_data_frame(query=query, org=settings.INFLUXDB_ORG)
+
+    return judge_plan_feasibility(result, start, destination)
