@@ -29,7 +29,7 @@ def create_forecast_points(client: InfluxDBClient, forecasts: List[Forecast]):
         write_api.write(bucket=settings.INFLUXDB_BUCKET, record=points)
 
 
-def read_coolest_districts(client: InfluxDBClient) -> List[Dict, Any]:
+def read_coolest_districts(client: InfluxDBClient) -> List[Dict[str, Any]]:
     query = (
         'import "date"'
         f'from(bucket: "{settings.INFLUXDB_BUCKET}")'

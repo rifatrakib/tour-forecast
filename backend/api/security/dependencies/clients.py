@@ -1,3 +1,5 @@
+import aioredis
+from aioredis.client import Redis
 from influxdb_client import InfluxDBClient
 
 from api.config.factory import settings
@@ -14,3 +16,11 @@ def get_influxdb_client():
         yield client
     finally:
         client.close()
+
+
+async def get_redis_client() -> Redis:
+    try:
+        redis = await aioredis.from_url(settings.REDIS_URI, decode_responses=True)
+        yield redis
+    finally:
+        await redis.close()
