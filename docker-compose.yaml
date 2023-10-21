@@ -46,6 +46,21 @@ services:
       - tour-forecast-db
       - tour-forecast-cache
 
+  tour-forecast-scraper:
+    container_name: tour-forecast-scraper
+    build: ./scraper
+    user: nobody
+    env_file:
+      - scraper/.env
+    restart: on-failure
+    depends_on:
+      - tour-forecast-db
+      - tour-forecast-cache
+      - tour-forecast-api
+    networks:
+      - public_network
+      - private_network
+
 volumes:
   influxdata:
   redisdata:
