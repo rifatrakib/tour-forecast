@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 import pandas as pd
 
 
-def process_coolest_districts_data(data: pd.DataFrame) -> List[Dict, Any]:
+def process_coolest_districts_data(data: pd.DataFrame) -> List[Dict[str, Any]]:
     return (
         data[["district", "temperature"]]
         .groupby("district")
