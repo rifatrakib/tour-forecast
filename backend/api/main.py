@@ -1,11 +1,16 @@
 from contextlib import asynccontextmanager
+from typing import List
 
-from fastapi import FastAPI, status
+from fastapi import Depends, FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
+from influxdb_client import InfluxDBClient
 
 from api.config.factory import settings
+from api.database.forecasts.repository import read_coolest_districts
 from api.events.startup import influxdb_onboarding, store_forecast_data
+from api.models.schemas.response.forecasts import CoolestDistricts
 from api.models.schemas.response.misc import HealthResponseSchema, MessageResponseSchema
+from api.security.dependencies.clients import get_influxdb_client
 from api.utils.docs import retrieve_api_metadata, retrieve_tags_metadata
 from api.utils.enums import Tags
 
@@ -42,3 +47,13 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 )
 async def health_check():
     return settings.model_dump()
+
+
+@app.get(
+    "/coolest-10",
+    response_model=List[CoolestDistricts],
+    summary="Coolest 10 Districts",
+    description="Returns the coolest 10 districts in Bangladesh in the next 7 days",
+)
+async def coolest_districts(client: InfluxDBClient = Depends(get_influxdb_client)):
+    return read_coolest_districts(client)
