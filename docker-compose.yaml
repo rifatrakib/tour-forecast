@@ -1,8 +1,8 @@
 version: "3.9"
 
 services:
-  influxdb:
-    container_name: influxdb
+  tour-forecast-db:
+    container_name: tour-forecast-db
     image: influxdb:latest
     ports:
       - "8086:8086"
@@ -10,6 +10,18 @@ services:
       - backend/.env.influxdb
     volumes:
       - influxdata:/var/lib/influxdb
+    restart: on-failure
+    networks:
+      - private_network
+
+  tour-forecast-cache:
+    container_name: tour-forecast-cache
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+      - redisconfig:/etc/redis
     restart: on-failure
     networks:
       - private_network
@@ -30,9 +42,14 @@ services:
     networks:
       - public_network
       - private_network
+    depends_on:
+      - tour-forecast-db
+      - tour-forecast-cache
 
 volumes:
   influxdata:
+  redisdata:
+  redisconfig:
 
 networks:
   private_network:

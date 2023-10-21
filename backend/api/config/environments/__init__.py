@@ -50,6 +50,10 @@ class BaseConfig(BaseSettings):
     INFLUXDB_ORG: str
     INFLUXDB_TOKEN: Union[str, None] = None
 
+    # Cache Servers Configurations
+    REDIS_HOST: str
+    REDIS_PORT: int
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -70,3 +74,7 @@ class BaseConfig(BaseSettings):
     @property
     def INFLUXDB_BUCKET(cls):
         return f"{cls.INFLUXDB_ORG}_bucket"
+
+    @property
+    def REDIS_URI(self) -> str:
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/cache"
