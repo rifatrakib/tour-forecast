@@ -1,10 +1,11 @@
-from pathlib import Path
 from typing import Any, Dict, List
 
+import aioredis
 import httpx
 from influxdb_client import InfluxDBClient
 
 from api.config.factory import settings
+from api.database.cache.repository import cache_read, cache_write
 from api.database.forecasts.repository import create_forecast_points
 from api.models.schemas.internals.districts import District, DistrictsDownload
 from api.models.schemas.internals.forecasts import Forecast
@@ -65,15 +66,12 @@ async def store_forecast_data():
 
 
 async def influxdb_onboarding():
-    file = Path("secrets/influxdb-admin-token.txt")
-    if file.exists():
-        with open(file) as reader:
-            token = reader.read()
+    redis = await aioredis.from_url(settings.REDIS_URI, decode_responses=True)
+    token = await cache_read(redis, "influxdb-admin-token")
 
-        if token:
-            settings.INFLUXDB_TOKEN = token
-            print("InfluxDB admin token already exists. Skipping onboarding.")
-            return
+    if token:
+        print("InfluxDB admin token already exists. Skipping onboarding.")
+        return
 
     payload = {
         "username": settings.INFLUXDB_USER,
@@ -96,7 +94,4 @@ async def influxdb_onboarding():
         response = await client.post(url, headers=headers, json=payload)
 
     data = response.json()
-    with open(file, "w") as writer:
-        writer.write(data["auth"]["token"])
-
-    settings.INFLUXDB_TOKEN = data["auth"]["token"]
+    await cache_write(redis, "influxdb-admin-token", data["auth"]["token"], ttl=None)

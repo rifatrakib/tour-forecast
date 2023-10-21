@@ -1,6 +1,6 @@
 import json
 from functools import lru_cache
-from typing import Any, Dict, Tuple, Type, Union
+from typing import Any, Dict, Tuple, Type
 
 from decouple import config
 from pydantic.fields import FieldInfo
@@ -48,7 +48,6 @@ class BaseConfig(BaseSettings):
     INFLUXDB_USER: str
     INFLUXDB_PASSWORD: str
     INFLUXDB_ORG: str
-    INFLUXDB_TOKEN: Union[str, None] = None
 
     # Cache Servers Configurations
     REDIS_HOST: str
