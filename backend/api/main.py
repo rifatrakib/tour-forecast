@@ -4,7 +4,7 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.config.factory import settings
-from api.events.startup import influxdb_onboarding, store_district_data
+from api.events.startup import influxdb_onboarding, store_forecast_data
 from api.models.schemas.response.misc import HealthResponseSchema, MessageResponseSchema
 from api.utils.docs import retrieve_api_metadata, retrieve_tags_metadata
 from api.utils.enums import Tags
@@ -12,8 +12,8 @@ from api.utils.enums import Tags
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await store_district_data()
     await influxdb_onboarding()
+    await store_forecast_data()
     yield
 
 

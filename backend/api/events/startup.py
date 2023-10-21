@@ -1,11 +1,12 @@
 import json
 from pathlib import Path
-from typing import List
+from typing import Any, Dict, List
 
 import httpx
 
 from api.config.factory import settings
-from api.models.schemas.internals.districts import DistrictsDownload
+from api.models.schemas.internals.districts import District, DistrictsDownload
+from api.models.schemas.internals.forecasts import Forecast
 
 
 async def download_districts() -> List[DistrictsDownload]:
@@ -16,10 +17,49 @@ async def download_districts() -> List[DistrictsDownload]:
     return DistrictsDownload.model_validate(response.json())
 
 
-async def store_district_data():
+async def download_forecasts(district: District) -> List[Forecast]:
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": district.lat,
+        "longitude": district.long,
+        "hourly": "temperature_2m",
+        "timezone": "auto",
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params)
+        print(f"url = {response.url}")
+
+    return response.json()
+
+
+def process_forecast_data(district: District, data: Dict[str, Any]):
+    results = []
+
+    for ts, temperature in zip(data["time"], data["temperature_2m"]):
+        results.append(
+            Forecast(
+                **district.model_dump(),
+                time=ts,
+                temperature=temperature,
+            )
+        )
+
+    return results
+
+
+async def store_forecast_data():
     data: DistrictsDownload = await download_districts()
-    # print(data)
-    return data
+    forecast_data = []
+
+    for district in data.districts:
+        response = await download_forecasts(district)
+        forecast_data.extend(process_forecast_data(district, response["hourly"]))
+
+    with open("secrets/forecast-data.json", "w") as writer:
+        writer.write(
+            json.dumps([forecast.model_dump() for forecast in forecast_data], indent=4),
+        )
 
 
 async def influxdb_onboarding():
