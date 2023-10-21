@@ -16,7 +16,7 @@ def retrieve_api_metadata() -> Dict[str, str]:
         "contact": {
             "name": f"Maintainer: {settings.APP_NAME}",
             "url": "http://127.0.0.1:8000/docs",
-            "email": settings.PGADMIN_DEFAULT_EMAIL,
+            "email": f"{settings.INFLUXDB_USER}@{settings.INFLUXDB_ORG}.com",
         },
     }
 

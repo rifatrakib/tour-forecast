@@ -4,23 +4,23 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.config.factory import settings
-from api.events.startup import store_district_data
+from api.events.startup import influxdb_onboarding, store_district_data
 from api.models.schemas.response.misc import HealthResponseSchema, MessageResponseSchema
-
-# from api.utils.docs import retrieve_api_metadata, retrieve_tags_metadata
+from api.utils.docs import retrieve_api_metadata, retrieve_tags_metadata
 from api.utils.enums import Tags
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await store_district_data()
+    await influxdb_onboarding()
     yield
 
 
 app = FastAPI(
     lifespan=lifespan,
-    # **retrieve_api_metadata(),
-    # openapi_tags=retrieve_tags_metadata(),
+    **retrieve_api_metadata(),
+    openapi_tags=retrieve_tags_metadata(),
     responses={
         status.HTTP_400_BAD_REQUEST: {"model": MessageResponseSchema},
         status.HTTP_401_UNAUTHORIZED: {"model": MessageResponseSchema},
