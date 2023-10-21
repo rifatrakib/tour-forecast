@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Dict, List
 
 import aioredis
@@ -66,12 +67,22 @@ async def store_forecast_data():
 
 
 async def influxdb_onboarding():
+    file = Path("secrets/influxdb-admin-token.txt")
     redis = await aioredis.from_url(settings.REDIS_URI, decode_responses=True)
     token = await cache_read(redis, "influxdb-admin-token")
 
     if token:
         print("InfluxDB admin token already exists. Skipping onboarding.")
         return
+    else:
+        if file.exists():
+            with open(file, "r") as f:
+                token = f.read()
+
+            if token:
+                await cache_write(redis, "influxdb-admin-token", token, ttl=None)
+                print("InfluxDB admin token already exists. Skipping onboarding.")
+                return
 
     payload = {
         "username": settings.INFLUXDB_USER,
@@ -95,3 +106,6 @@ async def influxdb_onboarding():
 
     data = response.json()
     await cache_write(redis, "influxdb-admin-token", data["auth"]["token"], ttl=None)
+
+    with open(file, "w") as f:
+        f.write(data["auth"]["token"])
