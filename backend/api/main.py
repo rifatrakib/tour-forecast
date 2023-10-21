@@ -11,7 +11,7 @@ from influxdb_client import InfluxDBClient
 from api.config.factory import settings
 from api.database.cache.repository import cache_read, cache_write
 from api.database.forecasts.repository import determine_plan_feasibility, read_coolest_districts
-from api.events.startup import influxdb_onboarding, store_forecast_data
+from api.events.startup import influxdb_onboarding
 from api.models.schemas.response.forecasts import CoolestDistricts
 from api.models.schemas.response.misc import HealthResponseSchema, MessageResponseSchema
 from api.security.dependencies.clients import get_influxdb_client, get_redis_client
@@ -22,7 +22,6 @@ from api.utils.enums import Tags
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await influxdb_onboarding()
-    await store_forecast_data()
     yield
 
 
