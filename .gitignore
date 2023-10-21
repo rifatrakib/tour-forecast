@@ -128,7 +128,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-*/secrets/influxdb-admin-token.json
+*/secrets/*.txt
 
 # Spyder project settings
 .spyderproject

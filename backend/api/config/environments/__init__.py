@@ -66,3 +66,7 @@ class BaseConfig(BaseSettings):
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
         return init_settings, env_settings, dotenv_settings, SettingsSource(settings_cls)
+
+    @property
+    def INFLUXDB_BUCKET(cls):
+        return f"{cls.INFLUXDB_ORG}_bucket"

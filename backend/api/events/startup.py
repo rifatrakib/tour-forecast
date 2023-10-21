@@ -1,10 +1,11 @@
-import json
 from pathlib import Path
 from typing import Any, Dict, List
 
 import httpx
+from influxdb_client import InfluxDBClient
 
 from api.config.factory import settings
+from api.database.forecasts.repository import create_forecast_points
 from api.models.schemas.internals.districts import District, DistrictsDownload
 from api.models.schemas.internals.forecasts import Forecast
 
@@ -28,7 +29,6 @@ async def download_forecasts(district: District) -> List[Forecast]:
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url, params=params)
-        print(f"url = {response.url}")
 
     return response.json()
 
@@ -56,28 +56,30 @@ async def store_forecast_data():
         response = await download_forecasts(district)
         forecast_data.extend(process_forecast_data(district, response["hourly"]))
 
-    with open("secrets/forecast-data.json", "w") as writer:
-        writer.write(
-            json.dumps([forecast.model_dump() for forecast in forecast_data], indent=4),
-        )
+    client: InfluxDBClient = InfluxDBClient(
+        url=f"http://{settings.INFLUXDB_HOST}:{settings.INFLUXDB_PORT}",
+        token=settings.INFLUXDB_TOKEN,
+        org=settings.INFLUXDB_ORG,
+    )
+    create_forecast_points(client, forecast_data)
 
 
 async def influxdb_onboarding():
-    file = Path("secrets/influxdb-admin-token.json")
+    file = Path("secrets/influxdb-admin-token.txt")
     if file.exists():
         with open(file) as reader:
-            data = json.loads(reader.read())
-            settings.INFLUXDB_TOKEN = data["token"]
-            print(f"{settings = }")
+            token = reader.read()
 
-        print("InfluxDB admin token already exists. Skipping onboarding.")
-        return
+        if token:
+            settings.INFLUXDB_TOKEN = token
+            print("InfluxDB admin token already exists. Skipping onboarding.")
+            return
 
     payload = {
         "username": settings.INFLUXDB_USER,
         "password": settings.INFLUXDB_PASSWORD,
         "org": settings.INFLUXDB_ORG,
-        "bucket": f"{settings.INFLUXDB_ORG}_bucket",
+        "bucket": settings.INFLUXDB_BUCKET,
     }
 
     headers = {
@@ -95,7 +97,6 @@ async def influxdb_onboarding():
 
     data = response.json()
     with open(file, "w") as writer:
-        writer.write(json.dumps({"token": data["auth"]["token"]}))
+        writer.write(data["auth"]["token"])
 
     settings.INFLUXDB_TOKEN = data["auth"]["token"]
-    print(f"{settings = }")
