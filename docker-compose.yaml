@@ -1,6 +1,19 @@
 version: "3.9"
 
 services:
+  influxdb:
+    container_name: influxdb
+    image: influxdb:latest
+    ports:
+      - "8086:8086"
+    env_file:
+      - backend/.env.influxdb
+    volumes:
+      - influxdata:/var/lib/influxdb
+    restart: on-failure
+    networks:
+      - private_network
+
   tour-forecast-api:
     container_name: tour-forecast-api
     build:
@@ -17,6 +30,9 @@ services:
     networks:
       - public_network
       - private_network
+
+volumes:
+  influxdata:
 
 networks:
   private_network:

@@ -2,9 +2,18 @@ import subprocess
 from enum import Enum
 from typing import Union
 
+from pydantic import BaseModel
 from typer import Typer
 
 app = Typer()
+
+
+class InfluxDBConfig(BaseModel):
+    INFLUXDB_HOST: str
+    INFLUXDB_PORT: int
+    INFLUXDB_USER: str
+    INFLUXDB_PASSWORD: str
+    INFLUXDB_ORG: str
 
 
 class Modes(str, Enum):
@@ -21,6 +30,15 @@ def deploy(mode: Union[str, None] = "development"):
 
         with open("backend/.env", "w") as writer:
             writer.write(f"MODE={mode}\n")
+
+        with open(f"backend/secrets/{mode}.json") as reader:
+            secrets = reader.read()
+
+        influxdb_secrets = InfluxDBConfig.model_validate_json(secrets)
+
+        with open("backend/.env.influxdb", "w") as writer:
+            for key, value in influxdb_secrets.model_dump().items():
+                writer.write(f"{key}={value}\n")
 
         subprocess.run("docker compose up --build")
     except KeyError:

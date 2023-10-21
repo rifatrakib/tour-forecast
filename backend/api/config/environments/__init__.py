@@ -1,6 +1,6 @@
 import json
 from functools import lru_cache
-from typing import Any, Dict, Tuple, Type
+from typing import Any, Dict, Tuple, Type, Union
 
 from decouple import config
 from pydantic.fields import FieldInfo
@@ -41,6 +41,14 @@ class SettingsSource(PydanticBaseSettingsSource):
 class BaseConfig(BaseSettings):
     APP_NAME: str
     MODE: Modes
+
+    # InfluxDB Configurations
+    INFLUXDB_HOST: str
+    INFLUXDB_PORT: int
+    INFLUXDB_USER: str
+    INFLUXDB_PASSWORD: str
+    INFLUXDB_ORG: str
+    INFLUXDB_TOKEN: Union[str, None] = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
