@@ -1,6 +1,7 @@
 from decouple import config
 
 BOT_NAME = "forecast"
+LOG_LEVEL = "WARNING"
 
 SPIDER_MODULES = ["forecast.spiders"]
 NEWSPIDER_MODULE = "forecast.spiders"

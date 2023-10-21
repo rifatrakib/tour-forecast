@@ -16,6 +16,14 @@ class InfluxDBConfig(BaseModel):
     INFLUXDB_ORG: str
 
 
+class ScraperConfig(BaseModel):
+    REDIS_HOST: str
+    REDIS_PORT: int
+    INFLUXDB_HOST: str
+    INFLUXDB_PORT: int
+    INFLUXDB_ORG: str
+
+
 class Modes(str, Enum):
     development = "development"
     staging = "staging"
@@ -35,9 +43,14 @@ def deploy(mode: Union[str, None] = "development"):
             secrets = reader.read()
 
         influxdb_secrets = InfluxDBConfig.model_validate_json(secrets)
+        scraper_secrets = ScraperConfig.model_validate_json(secrets)
 
         with open("backend/.env.influxdb", "w") as writer:
             for key, value in influxdb_secrets.model_dump().items():
+                writer.write(f"{key}={value}\n")
+
+        with open("scraper/.env", "w") as writer:
+            for key, value in scraper_secrets.model_dump().items():
                 writer.write(f"{key}={value}\n")
 
         subprocess.run("docker compose up --build")
